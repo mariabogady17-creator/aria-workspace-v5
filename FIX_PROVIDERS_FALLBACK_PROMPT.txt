@@ -1,0 +1,90 @@
+========================================================================
+PROMPT DE CORRECCIÓN: CADENA DE FALLBACK ROTA + ROLES INCORRECTOS
+(A.R.I.A V5 - server/providers.ts)
+========================================================================
+
+Instrucciones para el Agente IA que reciba este proyecto:
+
+El usuario reporta DOS errores simultáneos al chatear con A.R.I.A.:
+1) HTTP 402: "Insufficient Balance" (saldo insuficiente en algún proveedor)
+2) HTTP 400: "Input tag 'model' found using 'role' does not match any of the expected tags: 'system', 'developer', 'user', 'assistant', 'tool'"
+
+DIAGNÓSTICO (3 BUGS ENCADENADOS):
+El sistema de A.R.I.A usa una "cadena de fallback": si un proveedor falla, 
+automáticamente prueba el siguiente. El problema es que la cadena se ROMPE 
+prematuramente por 3 bugs que se disparan como dominó:
+
+Bug 1: HTTP 402 no se consideraba "reintentable"
+  - Cuando DeepSeek o Cerebras devuelven HTTP 402 (sin saldo), la función 
+    `isRetryable()` NO incluía el código 402, así que lo trataba como error 
+    fatal y ejecutaba un `break` que MATABA toda la cadena.
+  - El sistema nunca llegaba a probar Gemini ni los demás proveedores.
+
+Bug 2: El `break` en errores no reintentables
+  - El bloque catch tenía un `if (!isRetryable(err)) { break; }` que 
+    cortaba el bucle for completo. Esto significaba que si UN solo proveedor 
+    devolvía un error "no reintentable" (como 402), TODOS los demás 
+    proveedores se saltaban sin intentar.
+
+Bug 3: Confusión de roles entre Gemini SDK y OpenAI format
+  - El SDK oficial de Google (`@google/genai`) usa roles: "user" y "model"
+  - Los proveedores OpenAI-compatible usan roles: "user" y "assistant"
+  - El error de "Input tag 'model'" venía de los proveedores OpenAI 
+    (OpenRouter, DeepSeek) recibiendo "model" como rol.
+  - Pero el SDK de Gemini NECESITA "model", no "assistant".
+  - La solución es que CADA proveedor mapee los roles por separado.
+
+SOLUCIÓN (3 CAMBIOS en server/providers.ts):
+
+CAMBIO 1: Hacer que `isRetryable()` incluya HTTP 400 y 402
+Busca la función `isRetryable` y reemplázala por:
+
+```typescript
+function isRetryable(err: any): boolean {
+  // Tesla Rule: ALWAYS let the fallback chain continue.
+  // 400 = bad request (role mismatch), 401 = bad key,
+  // 402 = insufficient balance, 403 = forbidden, 429 = rate limit, 5xx = server error
+  const status = err?.status || err?.httpStatusCode;
+  if (status && (status === 400 || status === 401 || status === 402 || status === 403 || status === 429 || status >= 500)) return true;
+  const msg = String(err?.message || err || "");
+  return /timeout|timed out|ECONNRESET|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|abort|quota|rate.?limit|RESOURCE_EXHAUSTED|Insufficient|balance/i.test(msg);
+}
+```
+
+CAMBIO 2: Eliminar el `break` y reemplazarlo por `continue`
+En el bloque `catch` dentro del bucle `for` de la cadena de fallback,
+elimina el `if (!isRetryable(err)) { break; }` y ponlo así:
+
+```typescript
+} catch (err: any) {
+  lastError = err;
+  attempts.push({ provider: slot.kind, slot: slot.label, model: slot.model, ok: false, error: String(err?.message || err).slice(0, 200) });
+  logEvent("WARN", `Fallo en ${slot.label}: ${String(err?.message || err).slice(0, 200)}`);
+  // Tesla Rule: NEVER break the chain. Always try the next provider.
+  continue;
+}
+```
+
+CAMBIO 3: Asegurar roles correctos para CADA proveedor
+- Para GEMINI (dentro de `if (slot.kind === "gemini")`):
+  Los roles deben ser "user" y "model" (NO "assistant"):
+  ```typescript
+  return { role: m.role === "user" ? "user" : "model", parts };
+  ```
+  Y en el tool loop:
+  ```typescript
+  contents.push({ role: "model", parts: [{ functionCall: ... }] });
+  contents.push({ role: "function", parts: [{ functionResponse: ... }] });
+  ```
+
+- Para OpenAI-compatible (la función `callOpenAICompat` ya está correcta):
+  Los roles deben ser "user" y "assistant" (ya lo mapea bien en la línea):
+  ```typescript
+  ...messages.map(m => ({ role: m.role === "model" ? "assistant" : m.role, content: m.content }))
+  ```
+
+RESULTADO ESPERADO:
+Con estos 3 cambios, la cadena de fallback NUNCA se romperá. Si DeepSeek 
+devuelve 402, el sistema probará Cerebras, luego NVIDIA, luego OpenRouter, 
+luego Gemini, luego Pollinations, y finalmente Ollama local. Siempre habrá 
+al menos un proveedor que responda.

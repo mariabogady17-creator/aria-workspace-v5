@@ -1,0 +1,48 @@
+========================================================================
+PROMPT DE CORRECCIÓN: FIX DE LOGIN Y REGISTRO (A.R.I.A V5)
+========================================================================
+
+Instrucciones para el Agente IA que reciba este proyecto:
+Hola IA, el usuario tiene un problema con el sistema de Login: no puede entrar porque las contraseñas en la base de datos (users.json) usan un formato antiguo ("passHash") y el botón de "Registrarse" desapareció de la interfaz, por lo que no puede crear cuentas nuevas.
+
+Por favor, aplica las siguientes dos correcciones en el código:
+
+1. FIX EN EL BACKEND (server/auth.ts)
+Abre el archivo `server/auth.ts` y busca la función `verifyPassword`. 
+Reemplázala completamente por esta versión que soporta tanto el esquema antiguo (`passHash` con salt integrado) como el nuevo:
+
+```typescript
+export function verifyPassword(password: string, user: any): boolean {
+  if (user.passHash) {
+    const [salt, hash] = user.passHash.split(':');
+    const hashed = crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
+    return hashed === hash;
+  }
+  const hashed = crypto.pbkdf2Sync(password, user.salt, 1000, 64, "sha512").toString("hex");
+  return hashed === user.passwordHash;
+}
+```
+
+2. FIX EN EL FRONTEND (src/components/LoginView.tsx)
+Abre el archivo `src/components/LoginView.tsx`. 
+En el renderizado del formulario (cerca de la línea 150), asegúrate de que existan los botones para alternar entre "Iniciar Sesión" y "Crear Cuenta".
+
+Para el bloque de `mode === 'signin'`, añade esto debajo del botón de submit:
+```tsx
+<div className="text-center mt-6 pt-4 border-t border-white/5">
+  <button type="button" onClick={() => setMode('signup')} className="text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors tracking-widest">
+    CREAR UNA CUENTA NUEVA
+  </button>
+</div>
+```
+
+Para el bloque de `mode === 'signup'`, añade esto debajo del botón de submit:
+```tsx
+<div className="text-center mt-6 pt-4 border-t border-white/5">
+  <button type="button" onClick={() => setMode('signin')} className="text-[11px] text-white/40 hover:text-white/80 transition-colors tracking-widest">
+    YA TENGO CUENTA
+  </button>
+</div>
+```
+
+Con esto, el usuario podrá registrarse como administrador nuevo y el sistema de Login volverá a funcionar perfectamente. ¡Gracias!

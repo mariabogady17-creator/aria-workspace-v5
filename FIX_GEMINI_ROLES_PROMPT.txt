@@ -1,0 +1,32 @@
+========================================================================
+PROMPT DE CORRECCIÓN: ERROR DE PROVEEDORES (ROLES DE GEMINI)
+========================================================================
+
+Instrucciones para el Agente IA que reciba este proyecto:
+
+El usuario reportó un error 400 proveniente de la API al intentar hablar con los modelos de Gemini. 
+El error exacto es: `Input tag 'model' found using 'role' does not match any of the expected tags: 'system', 'developer', 'user', 'assistant', 'tool'`.
+
+**CAUSA DEL PROBLEMA:**
+Google actualizó recientemente su SDK oficial `@google/genai` (el que estamos usando) y cambió la convención de roles. Anteriormente, la IA usaba el rol `"model"` y las respuestas de funciones usaban `"function"`. En la nueva versión del SDK, han unificado el estándar con OpenAI, por lo que el rol de la IA debe ser `"assistant"` y la respuesta a una herramienta debe ser `"tool"`.
+
+**SOLUCIÓN (YA APLICADA):**
+Se modificó el archivo `server/providers.ts` en el backend, específicamente dentro de la función `chatWithFallback` en el bloque de procesamiento para `"gemini"`.
+
+**Pasos para verificar que está arreglado:**
+1. Abre `server/providers.ts`.
+2. Busca la línea donde se mapean los contenidos para Gemini:
+   ```typescript
+   return { role: m.role === "user" ? "user" : "assistant", parts };
+   ```
+   Asegúrate de que dice `"assistant"` y **no** `"model"`.
+3. Busca el bucle de las herramientas (`tool loop`) un poco más abajo, y verifica que se estén empujando los roles así:
+   ```typescript
+   contents.push({ role: "assistant", parts: [{ functionCall: { name: call.name, args: call.args } }] });
+   contents.push({
+     role: "tool",
+     parts: [{ functionResponse: { name: call.name, response: { result: execResult.result } } }],
+   });
+   ```
+
+Con estos cambios, el backend formatea correctamente los mensajes según el nuevo estándar del SDK de Google, y el error desaparece, permitiendo conversar fluidamente con Flash 2.5 y 3.1 Pro.

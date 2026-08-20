@@ -1,0 +1,11 @@
+He actualizado A.R.I.A a la versión V6 con capacidades de Inteligencia Artificial Offline local (Edge AI).
+
+Detalles de la implementación:
+- Se integró la librería `@xenova/transformers`.
+- Se creó el Web Worker (`src/workers/ai.worker.ts`) para descargar y cachear modelos ligeros sin bloquear la interfaz.
+- El "Oído Local" usa el modelo `Xenova/whisper-tiny`. Sustituimos la obsoleta `webkitSpeechRecognition` por grabación en `MediaRecorder`, procesando el audio en binario y transcribiéndolo localmente en tiempo real en `HandsFreeMode.tsx`.
+- El "Cerebro Local" usa el modelo `Xenova/Qwen1.5-0.5B-Chat` inyectándole el System Prompt de soporte de herramientas. 
+- En `App.tsx` hemos implementado un sistema de fallback automático: si la llamada online a la API falla, A.R.I.A entra automáticamente en "Modo de Supervivencia", resolviendo los mensajes con la IA local y mostrando el banner rojo pertinente en la UI.
+- Se reparó el diseño de la pantalla de login para que el botón de registro sea claramente visible.
+
+Por favor, revisa el proyecto y valida el modo Hands Free (Manos libres) hablando al micrófono tras detener la conexión a internet.

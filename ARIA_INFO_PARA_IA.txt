@@ -1,0 +1,53 @@
+========================================================================
+A.R.I.A. WORKSPACE - DOCUMENTACIÓN TÉCNICA Y ESTADO ACTUAL (PARA IA)
+========================================================================
+
+Esta documentación está diseñada para dar contexto rápido y preciso a otra IA 
+sobre la arquitectura, flujo y últimos cambios realizados en el proyecto.
+
+1. ARQUITECTURA GENERAL
+------------------------------------------------------------------------
+- Frontend: React + TypeScript + Vite. Interfaz "Neumorphic 2.0" (fondo #131313, acentos #818cf8).
+- Backend: Node.js + Express (server.ts). Reemplaza al antiguo backend en Python/FastAPI.
+- Autenticación: Sistema JWT con firmas HMAC y hashes scrypt gestionado por 'server/auth.ts'.
+- Persistencia Local: No hay base de datos tradicional. Se utiliza un almacenamiento en archivos JSON en '.aria_data/' gestionado por 'server/db.ts' (colecciones 'settings', 'conversations', 'documents').
+- Generación 3D: Animación "Morphing" nativa (Helix/Galaxy/Torus/Sphere) portada a Three.js puro, renderizada dentro de un `useEffect` en `LoginScene.tsx` para evitar dependencias conflictivas (sin react-three-fiber).
+
+2. FLUJO DE EJECUCIÓN (CÓMO ARRANCARLO)
+------------------------------------------------------------------------
+- Script principal: `ARIA_WORKSPACE.bat` (Ubicado en la carpeta principal).
+- Qué hace el script:
+  1. Detecta si Node.js está instalado.
+  2. Entra al directorio `a.r.i.a.-workspace`.
+  3. Ejecuta `npm install` automáticamente si la carpeta `node_modules` no existe.
+  4. Auto-crea el archivo `.env` base si falta.
+  5. Inicia el servidor usando `npm run dev`.
+- Al iniciar, el servidor levanta tanto los endpoints de la API en el puerto 3000 como el servidor Vite en modo middleware, sirviendo el cliente React en el mismo puerto (0.0.0.0:3000).
+
+3. PRINCIPALES MÓDULOS DE BACKEND (server/)
+------------------------------------------------------------------------
+- `auth.ts`: Maneja Auth, `signin`, `signup` y middleware JWT.
+- `providers.ts`: Implementa un motor "Fallback". Si Gemini falla, puede redirigir la petición automáticamente a un proveedor compatible con OpenAI configurado por el usuario.
+- `office.ts`: Interpreta los "Tool calls" de Gemini para generar archivos reales de Office (.docx, .xlsx, .pptx) usando `docx`, `exceljs` y `pptxgenjs` (en Node, eliminando la vieja dependencia de Python).
+- `skills.ts`: Escanea la carpeta externa externa `opencode-skills-125` buscando archivos `SKILL.md`, parsea su frontmatter (YAML) y los inyecta dinámicamente como parte del "System Prompt" del chat según las preferencias del usuario.
+- `tunnel.ts`: Módulo encargado de exponer la aplicación local al exterior (Internet) de forma segura. Soporta `cloudflared.exe`. IMPORTANTE: Tiene un mecanismo de contingencia; si `cloudflared.exe` no es detectado en el PATH, realiza una conexión SSH inversa automática hacia `serveo.net` (`ssh -R 80:localhost:PORT serveo.net`) utilizando el cliente nativo de Windows.
+
+4. ÚLTIMOS CAMBIOS REALIZADOS (FRONTEND INTEGRADO)
+------------------------------------------------------------------------
+- Login Integrado: El `App.tsx` fue modificado para tener un Auth Gate estricto. Si no hay token JWT válido, se renderiza la escena 3D y el selector de perfiles (`LoginView`).
+- Selector de IA Dinámico: En `ChatView.tsx` y `SettingsModal.tsx`, los modelos de IA ya no están en crudo (hardcoded), sino que hacen fetch a `/api/models` (lista que combina Gemini y slots OpenAI activos).
+- UX de ChatView Mejorado:
+  - Se muestran visualmente los botones de descarga de archivos (Office Docs) si la IA generó uno.
+  - Indicadores (badges) visuales del proveedor usado y estado "⚠️ Fallback Activo" si se activó el puente de contingencia.
+- Meeting Mode (Modo Reunión): La vista `MeetingModeView.tsx` ahora tiene la capacidad real de hacer resúmenes y cuenta con un botón "Save to Vault" que empaqueta la transcripción completa más la respuesta JSON estructurada y la guarda en `/api/documents`.
+- Panel de Administración (AdminView): 
+  - Todos los KPIs y Server Logs son reales y se actualizan por sondeo constante a `/api/admin/stats`.
+  - Se implementó la interfaz del Túnel Público (Cloudflare/Serveo). Con un solo clic llama a `/api/admin/tunnel/start`, muestra el link con un botón rápido de "Copiar al portapapeles" y permite detener el túnel a voluntad.
+
+5. CÓMO DEBE PROCEDER OTRA IA EN FUTURAS MEJORAS
+------------------------------------------------------------------------
+- Al modificar interfaces, siempre respeta el "Neumorphic 2.0" y el theme color-palette.
+- Al modificar archivos de lógica de Backend, usa TypeScript y verifica `npm run lint`.
+- No añadas dependencias de Python; el ecosistema es 100% Node.js.
+- En caso de tocar scripts bash/batch, asume un entorno de Windows (PowerShell/CMD).
+========================================================================

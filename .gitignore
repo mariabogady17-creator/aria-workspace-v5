@@ -1,0 +1,40 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# System files
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Binary
+cloudflared.exe
+
+# Data (user-specific)
+data/*.json
+
+# Scratch / temp
+scratch.ts
+*.bak
+extract_css*.cjs
+test_*.js
+test_*.cjs
+test_*.mjs
+remove_db.cjs
+replace_colors.cjs
+replace_margin.js
+raw_prompt.json
+
+# Skills directory (separate repo)
+opencode-skills-125/
+
+# Build artifacts
+package-lock.json

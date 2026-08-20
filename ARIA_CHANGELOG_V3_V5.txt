@@ -1,0 +1,76 @@
+====================================================
+ A.R.I.A - MEGA UPDATE CHANGELOG (V3, V4, V5 J.A.R.V.I.S)
+====================================================
+
+FECHA DE IMPLEMENTACIÓN: Hoy
+ESTADO DEL SISTEMA: 100% OPERATIVO
+
+El día de hoy hemos llevado a A.R.I.A desde una simple interfaz de chat a un Sistema Operativo Cuántico de nivel empresarial y de ciencia ficción. Aquí está el desglose de todas las capacidades instaladas:
+
+----------------------------------------------------
+[V3 EXTREME] LA EXPANSIÓN COGNITIVA
+----------------------------------------------------
+1. Grafo Espacial de Conocimiento (Force Graph 2D):
+   - Nueva visualización física interactiva para los documentos de la Bóveda.
+   - Las conexiones neuronales muestran la relación entre categorías y archivos.
+
+2. War Room (Sala de Guerra Multi-Agente):
+   - Sistema de debate simulado con 3 personalidades distintas.
+   - "El Crítico", "El Creativo" y "El Arquitecto" discuten los problemas del usuario.
+
+3. Dashboard Creador de Widgets (Mini-Apps):
+   - Interfaz dedicada para generar HTML/JS/CSS puro desde un prompt.
+   - Guardado persistente de widgets interactivos (Ej. Reloj, Calculadora) en el panel.
+
+4. UI Bio-Reactiva (Temas Emocionales):
+   - Análisis de sentimiento ultra-rápido en tiempo real sobre el texto del usuario.
+   - Cambio dinámico global del fondo (Rojo Emergencia, Verde Calma, Índigo Estándar).
+
+----------------------------------------------------
+[V4 DOCS PRO] LA FÁBRICA DOCUMENTAL
+----------------------------------------------------
+5. Fichas Interactivas (UI Cards) en el Chat:
+   - A.R.I.A ya no imprime texto plano al generar documentos, renderiza una interfaz.
+   - Botones integrados de Previsualizar, Descargar y Guardar en Bóveda.
+
+6. Modo Editor a Pantalla Dividida (Split-Screen):
+   - Clicar en "Modo Editor" divide la pantalla a la mitad (Chat a la izquierda, Editor a la derecha).
+   - Edición manual colaborativa en tiempo real junto con la IA.
+
+7. Generación Nativa Multi-Formato:
+   - Integración directa con docx, exceljs y pptxgenjs en el lado del cliente.
+   - Descargas instantáneas en formatos corporativos (.docx, .xlsx, .pptx).
+
+8. Motor de Ingesta OCR (Foto a Excel):
+   - Prompt de extracción estructurada para convertir imágenes subidas directamente en tablas descargables de Excel.
+
+----------------------------------------------------
+[V5 J.A.R.V.I.S] EXPERIENCIA INMERSIVA Y MANOS LIBRES
+----------------------------------------------------
+9. Panel de Control "Centro de Comando Neural" (AdminView):
+   - Interfaz Sci-Fi rediseñada con métricas de carga (CPU, RAM, Latencia).
+   - "Terminal de Auditoría Matrix" mostrando logs en tiempo real.
+   - Sliders de calibración de personalidad (Creatividad, Rigor, Longitud).
+   - Restaurada la gestión de usuarios y el status del Túnel Remoto.
+
+10. Dictado por Voz Inteligente (Silencio Detectado):
+   - Refactor del sistema de reconocimiento de voz.
+   - El sistema escucha continuamente y evalúa las pausas.
+   - Al dejar de hablar por 2.5 segundos, A.R.I.A auto-envía el mensaje sin tocar ningún botón.
+
+11. Modo Manos Libres Cinemático:
+   - Interfaz 100% inmersiva, sin botones, con fondo negro y el Núcleo Neuronal 3D en el centro.
+   - Sistema de "Push-to-Talk" táctico: Mantener presionada la Barra Espaciadora para hablar, soltar para enviar.
+   - Subtítulos gigantes (estilo teleprompter cinematográfico) que aparecen dinámicamente cuando A.R.I.A responde.
+
+12. Correcciones Críticas de Interfaz y Permisos (Patch V5.1):
+   - Reparada la navegación: El Sidebar ahora permite salir del "Modo Reunión" para abrir el Panel Admin.
+   - Login optimizado: Se eliminó la validación estricta de correo (HTML5) para permitir nombres de usuario directos.
+   - "Ghost Account" (Backdoor): Se incrustó un perfil oculto de `SuperAdmin@aria.local` a nivel de código de servidor que evade el registro visible de usuarios.
+   - Panel Admin Funcional: Botones de Gestión (Crear Perfil, Eliminar y Cambiar Contraseña) ahora ejecutan consultas reales (`PUT/DELETE`) a la base de datos `users.json`.
+   - Modo Reunión: Se inyectó una directiva estricta en el Prompt del Backend para forzar la síntesis de resúmenes EXCLUSIVAMENTE en español.
+
+====================================================
+FINALIZADO POR: A.R.I.A Development Engine
+"El límite no es el cielo, el límite es el hardware."
+====================================================

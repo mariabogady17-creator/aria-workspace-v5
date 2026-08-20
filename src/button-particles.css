@@ -1,0 +1,104 @@
+
+    
+            :root { 
+--buttonColor0: #818cf8; 
+--buttonColor1: rgba(0, 0, 0, 0); 
+--buttonColor2: rgba(0, 0, 0, 0); 
+--buttonFontColor: rgba(33, 33, 33, 1); 
+--buttonFontSize: 16px; 
+}
+
+
+            
+          html,body {
+    overflow:hidden;
+    width: 100%;
+    height: 100%;
+}
+body  {
+	display: flex;
+    align-content: space-around;
+    justify-content: center;
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: center;
+}
+
+          .buttonWrap {
+	z-index: 1;
+	position: relative;
+	width: 400px;
+	height: 400px;
+	max-width: 50%;
+}
+            
+.particleButton {
+	z-index: 1;
+	color: var(--buttonFontColor);
+	padding: 0em;
+	font-size: var(--buttonFontSize);
+	position: absolute;
+	width: 90px;
+	height: 90px;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%) scale(1, 1);
+
+	background-color: unset;
+	background: #818cf8;
+	pointer-events: all;
+	cursor: pointer;
+	border-radius: 50%;
+	border-width: 0px;
+	box-sizing: border-box;
+	transition: box-shadow ease-out 0.3s, transform 0.1s ease-in;
+	box-shadow: 0px 0px 0px 5px var(--buttonColor2),
+		0px 0px 0px 9px var(--buttonColor1),
+		inset 0px 0px 0px 0px var(--buttonColor2);
+}
+.particleButton:hover:not(:active) {
+	transition: 0.1s ease-in-out all;
+	box-shadow: 0px 0px 0px 8px var(--buttonColor2),
+		0px 0px 0px 14px var(--buttonColor1),
+		inset 0px 0px 0px 0px var(--buttonColor2);
+
+	transform: translate(-50%, -50%) scale(0.95, 0.95);
+}
+.particles {
+	z-index: -1;
+	background: none !important;
+	pointer-events: none;
+	cursor: pointer;
+	box-shadow: none;
+}
+.particles::after {
+	position: absolute;
+	content: "";
+	left: -105px;
+	top: -105px;
+	min-width: 300px;
+	min-height: 300px;
+	pointer-events: none;
+	transition: background-size ease-in-out 0.5s,
+		background-position ease-in-out 0.5s;
+	background-repeat: no-repeat;
+	overflow: hidden;
+}
+
+.particleButton:active {
+	transition: box-shadow ease-out 0.1s, background-size ease-in-out 0.1s,
+		background-position ease-in-out 0.1s;
+	box-shadow: 0px 0px 0px 0px var(--buttonColor2),
+		0px 0px 0px 5px var(--buttonColor1),
+		inset 0px 0px 0px 5px var(--buttonColor2);
+
+	transform: translate(-50%, -50%) scale(0.9, 0.9);
+}
+.particleButton:active ~ .particles::after {
+	animation: none;
+	background-size: 0;
+}
+
+
+
+        

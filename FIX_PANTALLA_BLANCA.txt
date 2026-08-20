@@ -1,0 +1,26 @@
+SOLUCIÓN AL PANTALLAZO BLANCO (BLANK SCREEN FIX)
+===================================================
+
+Causa del problema:
+He analizado el navegador interno y encontré el culpable. Tu navegador tiene guardado un "Service Worker" (un caché profundo) de un proyecto antiguo llamado "OpenSpeedTest" que estabas corriendo en el puerto 3000. 
+Cuando intentas abrir A.R.I.A en http://localhost:3000, ese Service Worker intercepta la conexión y corrompe la carga de Vite, causando un conflicto de WebSockets y dejando la pantalla en blanco.
+
+Tienes dos opciones para solucionarlo, elige la que prefieras:
+
+OPCIÓN 1: La Solución Rápida (Recomendada)
+------------------------------------------
+En lugar de entrar a localhost, entra usando la IP directa. Esto engaña al navegador para que ignore el caché corrupto.
+1. Abre tu navegador.
+2. Entra a esta URL exacta: http://127.0.0.1:3000
+
+
+OPCIÓN 2: La Solución Definitiva (Borrar el caché antiguo)
+------------------------------------------
+Si quieres seguir usando "localhost:3000", debes borrar el Service Worker fantasma:
+1. Ve a http://localhost:3000 y presiona F12 para abrir las Herramientas de Desarrollador.
+2. Ve a la pestaña "Application" (Aplicación).
+3. En el menú de la izquierda, haz clic en "Storage" (Almacenamiento).
+4. Haz clic en el botón "Clear site data" (Borrar datos del sitio).
+5. Refresca la página con F5. 
+
+¡A.R.I.A aparecerá inmediatamente con todos sus gráficos en 3D listos para funcionar!
