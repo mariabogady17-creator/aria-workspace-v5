@@ -891,7 +891,7 @@ app.get("/models/*", (_req, res) => {
 });
 
 async function startServer() {
-  await connectDB();
+  connectDB().catch(() => {});
   ensureDefaultAdmin();
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");

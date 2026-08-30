@@ -27,7 +27,13 @@ export async function connectDB(): Promise<void> {
     return;
   }
   try {
-    client = new MongoClient(MONGODB_URI);
+    client = new MongoClient(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+      tls: true,
+      tlsAllowInvalidCertificates: false,
+    });
     await client.connect();
     db = client.db(DB_NAME);
     mongoAvailable = true;
@@ -42,6 +48,7 @@ export async function connectDB(): Promise<void> {
     console.log("[DB] Cache loaded:", Object.keys(cache).join(", ") || "(empty)");
   } catch (err: any) {
     console.error("[DB] MongoDB connection failed:", err.message);
+    console.log("[DB] Falling back to local JSON storage");
     mongoAvailable = false;
   }
 }
