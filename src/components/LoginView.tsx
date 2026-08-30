@@ -92,11 +92,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     <div className="relative w-screen h-screen overflow-hidden bg-black flex items-center justify-center font-sans">
       <LoginScene className="absolute inset-0 z-0 pointer-events-none" onPhaseChange={setPhaseIndex} />
 
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-end px-12 py-6 gap-8 bg-gradient-to-b from-black/50 to-transparent">
-        <div className="flex items-center gap-2 text-xs font-mono tracking-widest">
-          <span className="text-white/40">SYS.STATUS:</span>
-          <span className="text-teal-400 font-semibold drop-shadow-[0_0_8px_rgba(45,212,191,0.5)]">OPTIMAL</span>
-        </div>
+      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/50 to-transparent">
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 z-10 px-16 pb-20 pointer-events-none">
