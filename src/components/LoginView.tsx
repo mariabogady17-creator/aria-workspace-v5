@@ -109,22 +109,15 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
       </div>
 
       {!showLoginCard && (
-        <div className={`relative z-20 flex flex-col items-center gap-4 transition-all duration-700 ${fadeOutIntro ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-          <div className="text-center mb-4">
-            <h1 className="text-5xl md:text-7xl font-extralight text-white tracking-[12px] mb-3" style={{ textShadow: '0 0 60px rgba(130,70,210,0.3)' }}>
-              A.R.I.A.
-            </h1>
-            <p className="text-[11px] tracking-[5px] text-white/25 uppercase">
-              Workspace Edition
-            </p>
+        <div className={`absolute top-8 right-12 z-20 flex flex-col items-end gap-4 transition-all duration-700 ${fadeOutIntro ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`transition-all duration-700 ${showButton ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+            <button
+              onClick={handleEnterLogin}
+              className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 border border-indigo-400/50 rounded-xl text-white text-[11px] font-medium tracking-[3px] uppercase hover:shadow-[0_0_30px_rgba(150,80,230,0.4)] hover:-translate-y-[1px] transition-all duration-300"
+            >
+              Entrar
+            </button>
           </div>
-
-          <button
-            onClick={handleEnterLogin}
-            className={`px-14 py-4 bg-transparent border border-white/20 rounded-full text-white text-[11px] font-medium tracking-[4px] uppercase hover:bg-white/10 hover:border-white/40 hover:shadow-[0_0_40px_rgba(255,255,255,0.08)] transition-all duration-500 ${showButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-          >
-            Entrar
-          </button>
         </div>
       )}
 
