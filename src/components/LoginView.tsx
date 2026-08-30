@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LoginScene } from './LoginScene';
-import { User, LogIn, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface LocalUser {
   id: string;
@@ -24,25 +24,27 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [phaseIndex, setPhaseIndex] = useState(0);
+  const [showButton, setShowButton] = useState(false);
   const [showLoginCard, setShowLoginCard] = useState(false);
+  const [fadeOutIntro, setFadeOutIntro] = useState(false);
 
-  const handleSelectUser = (u: LocalUser) => {
-    setSelectedUser(u);
-    setEmail(u.email);
-    setMode('signin');
-    setError('');
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => setShowButton(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleEnterLogin = () => {
-    setShowLoginCard(true);
-    setTimeout(() => setMode('signin'), 100);
+    setFadeOutIntro(true);
+    setTimeout(() => {
+      setShowLoginCard(true);
+      setMode('signin');
+    }, 600);
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
     try {
       const res = await fetch('/api/auth/signin', {
         method: 'POST',
@@ -51,7 +53,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Credenciales incorrectas');
-      
       onLoginSuccess(data.token, data.user);
     } catch (err: any) {
       setError(err.message);
@@ -64,7 +65,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
     try {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -73,7 +73,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al crear cuenta');
-      
       onLoginSuccess(data.token, data.user);
     } catch (err: any) {
       setError(err.message);
@@ -110,18 +109,21 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
       </div>
 
       {!showLoginCard && (
-        <div className="relative z-20 flex flex-col items-center gap-6">
-          <h1 className="text-5xl md:text-6xl font-extralight text-white tracking-[8px] mb-2 animate-fade-in-up">
-            A.R.I.A.
-          </h1>
-          <p className="text-xs tracking-[4px] text-white/30 uppercase animate-fade-in-up animation-delay-100">
-            Workspace Edition
-          </p>
+        <div className={`relative z-20 flex flex-col items-center gap-4 transition-all duration-700 ${fadeOutIntro ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+          <div className="text-center mb-4">
+            <h1 className="text-5xl md:text-7xl font-extralight text-white tracking-[12px] mb-3" style={{ textShadow: '0 0 60px rgba(130,70,210,0.3)' }}>
+              A.R.I.A.
+            </h1>
+            <p className="text-[11px] tracking-[5px] text-white/25 uppercase">
+              Workspace Edition
+            </p>
+          </div>
+
           <button
             onClick={handleEnterLogin}
-            className="mt-8 px-12 py-4 bg-gradient-to-br from-indigo-600/80 to-purple-600/80 border border-indigo-400/40 rounded-xl text-white text-[11px] font-medium tracking-[3px] uppercase hover:shadow-[0_0_40px_rgba(150,80,230,0.4)] hover:-translate-y-[2px] transition-all duration-300 animate-fade-in-up animation-delay-200"
+            className={`px-14 py-4 bg-transparent border border-white/20 rounded-full text-white text-[11px] font-medium tracking-[4px] uppercase hover:bg-white/10 hover:border-white/40 hover:shadow-[0_0_40px_rgba(255,255,255,0.08)] transition-all duration-500 ${showButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
-            Iniciar Sesión
+            Entrar
           </button>
         </div>
       )}
@@ -131,19 +133,19 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           <h2 className="text-2xl font-light tracking-[6px] text-white text-center mb-1">A.R.I.A.</h2>
           <p className="text-[10px] tracking-[3px] text-white/30 text-center uppercase mb-10">Workspace Edition</p>
 
-        {error && (
-          <div className="flex items-center gap-2 text-rose-400 bg-rose-500/10 p-3 rounded-xl mb-6 text-sm border border-rose-500/20">
-            <AlertCircle className="w-4 h-4" />
-            <span>{error}</span>
-          </div>
-        )}
+          {error && (
+            <div className="flex items-center gap-2 text-rose-400 bg-rose-500/10 p-3 rounded-xl mb-6 text-sm border border-rose-500/20">
+              <AlertCircle className="w-4 h-4" />
+              <span>{error}</span>
+            </div>
+          )}
 
-        {mode === 'signin' && (
-          <form onSubmit={handleSignIn} className="space-y-5">
-            <div>
-              <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Email</label>
-              <input
-                type="text"
+          {mode === 'signin' && (
+            <form onSubmit={handleSignIn} className="space-y-5">
+              <div>
+                <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Email</label>
+                <input
+                  type="text"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 focus:shadow-[0_0_28px_rgba(130,70,210,0.12)] transition-all"
@@ -152,88 +154,88 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                 />
               </div>
 
-            <div>
-              <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 focus:shadow-[0_0_28px_rgba(130,70,210,0.12)] transition-all"
-                placeholder="••••••••"
-                required
-              />
-            </div>
+              <div>
+                <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Contraseña</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 focus:shadow-[0_0_28px_rgba(130,70,210,0.12)] transition-all"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="relative w-full p-4 mt-4 bg-gradient-to-br from-indigo-600/80 to-purple-600/80 border border-indigo-400/40 rounded-xl text-white text-[11px] font-medium tracking-[2.5px] uppercase hover:shadow-[0_0_36px_rgba(150,80,230,0.3)] hover:-translate-y-[1px] transition-all disabled:opacity-65 disabled:pointer-events-none overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              {loading ? <Loader2 className="w-4 h-4 mx-auto animate-spin" /> : 'Iniciar Sesión'}
-            </button>
-            
-            <div className="text-center mt-6 pt-4 border-t border-white/5">
-              <button type="button" onClick={() => setMode('signup')} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-[11px] text-white hover:bg-white/10 transition-colors tracking-widest uppercase font-medium">
-                Crear una cuenta nueva
+              <button
+                type="submit"
+                disabled={loading}
+                className="relative w-full p-4 mt-4 bg-gradient-to-br from-indigo-600/80 to-purple-600/80 border border-indigo-400/40 rounded-xl text-white text-[11px] font-medium tracking-[2.5px] uppercase hover:shadow-[0_0_36px_rgba(150,80,230,0.3)] hover:-translate-y-[1px] transition-all disabled:opacity-65 disabled:pointer-events-none overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                {loading ? <Loader2 className="w-4 h-4 mx-auto animate-spin" /> : 'Iniciar Sesión'}
               </button>
-            </div>
-          </form>
-        )}
 
-        {mode === 'signup' && (
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div>
-              <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Nombre</label>
-              <input
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all"
-                placeholder="Tu nombre completo"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Email</label>
-              <input
-                type="text"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all"
-                placeholder="tu@email.com o Usuario"
-                required
-              />
-            </div>
+              <div className="text-center mt-6 pt-4 border-t border-white/5">
+                <button type="button" onClick={() => setMode('signup')} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-[11px] text-white hover:bg-white/10 transition-colors tracking-widest uppercase font-medium">
+                  Crear una cuenta nueva
+                </button>
+              </div>
+            </form>
+          )}
 
-            <div>
-              <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all"
-                placeholder="••••••••"
-                required
-              />
-            </div>
+          {mode === 'signup' && (
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div>
+                <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Nombre</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all"
+                  placeholder="Tu nombre completo"
+                  required
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="relative w-full p-4 mt-2 bg-gradient-to-br from-indigo-600/80 to-purple-600/80 border border-indigo-400/40 rounded-xl text-white text-[11px] font-medium tracking-[2.5px] uppercase hover:shadow-[0_0_36px_rgba(150,80,230,0.3)] transition-all disabled:opacity-65"
-            >
-              {loading ? <Loader2 className="w-4 h-4 mx-auto animate-spin" /> : 'Crear Cuenta'}
-            </button>
+              <div>
+                <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Email</label>
+                <input
+                  type="text"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all"
+                  placeholder="tu@email.com o Usuario"
+                  required
+                />
+              </div>
 
-            <div className="text-center mt-6 pt-4 border-t border-white/5">
-              <button type="button" onClick={() => setMode('signin')} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-[11px] text-white hover:bg-white/10 transition-colors tracking-widest uppercase font-medium">
-                Ya tengo cuenta
+              <div>
+                <label className="block text-[10px] tracking-[1.8px] text-white/30 uppercase mb-2">Contraseña</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-light outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="relative w-full p-4 mt-2 bg-gradient-to-br from-indigo-600/80 to-purple-600/80 border border-indigo-400/40 rounded-xl text-white text-[11px] font-medium tracking-[2.5px] uppercase hover:shadow-[0_0_36px_rgba(150,80,230,0.3)] transition-all disabled:opacity-65"
+              >
+                {loading ? <Loader2 className="w-4 h-4 mx-auto animate-spin" /> : 'Crear Cuenta'}
               </button>
-            </div>
-          </form>
-        )}
+
+              <div className="text-center mt-6 pt-4 border-t border-white/5">
+                <button type="button" onClick={() => setMode('signin')} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-[11px] text-white hover:bg-white/10 transition-colors tracking-widest uppercase font-medium">
+                  Ya tengo cuenta
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       )}
     </div>
