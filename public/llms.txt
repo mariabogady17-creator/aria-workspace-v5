@@ -1,0 +1,21 @@
+# A.R.I.A Workspace
+
+A.R.I.A (Autonomous Responsive Intelligent Assistant) es un sistema operativo de IA workspace con asistente inteligente, creación de documentos, agentes autónomos y productividad avanzada.
+
+## Descripción
+
+A.R.I.A Workspace es una plataforma web que integra múltiples modelos de IA (Gemini, OpenAI-compatible) para ofrecer asistencia inteligente, generación de documentos Office (Word, Excel, PowerPoint), búsqueda web, agentes autónomos de investigación y herramientas de productividad.
+
+## Características
+
+- Asistente de IA multimodal con múltiples proveedores
+- Creación de documentos Office (.docx, .xlsx, .pptx)
+- Agentes autónomos de investigación
+- Gestión de notas, calendario y documentos
+- Widgets personalizables
+- Búsqueda web en tiempo real
+
+## Enlaces
+
+- [Documentación](https://aria-workspace-v5-production.up.railway.app)
+- [API Health](https://aria-workspace-v5-production.up.railway.app/api/health)

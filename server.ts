@@ -22,6 +22,18 @@ const PORT = Number(process.env.PORT || process.env.ARIA_PORT || 3000);
 
 app.use(express.json({ limit: "25mb" }));
 
+// ================= security headers =================
+app.use((_req, res, next) => {
+  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://image.pollinations.ai; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  next();
+});
+
 // ================= auth helpers =================
 
 function authUser(req: express.Request): LocalUser | null {
