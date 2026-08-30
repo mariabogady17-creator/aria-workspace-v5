@@ -18,7 +18,7 @@ import { readCollection, writeCollection, docsDir, connectDB } from "./server/db
 dotenv.config();
 
 const app = express();
-const PORT = Number(process.env.ARIA_PORT || 3000);
+const PORT = Number(process.env.PORT || process.env.ARIA_PORT || 3000);
 
 app.use(express.json({ limit: "25mb" }));
 
