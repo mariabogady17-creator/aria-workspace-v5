@@ -13,7 +13,7 @@ import {
 import { compileDocx, compileXlsx, compilePptx } from "./server/documentCompiler";
 import { listSkills, buildSkillsPrompt } from "./server/skills";
 import { startTunnel, stopTunnel, tunnelStatus } from "./server/tunnel";
-import { readCollection, writeCollection, docsDir } from "./server/db";
+import { readCollection, writeCollection, docsDir, connectDB } from "./server/db";
 
 dotenv.config();
 
@@ -891,6 +891,7 @@ app.get("/models/*", (_req, res) => {
 });
 
 async function startServer() {
+  await connectDB();
   ensureDefaultAdmin();
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
