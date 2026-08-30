@@ -14,26 +14,28 @@ interface LoginViewProps {
 
 export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const [users, setUsers] = useState<LocalUser[]>([]);
-  const [mode, setMode] = useState<'select' | 'signin' | 'signup'>('select');
+  const [mode, setMode] = useState<'intro' | 'signin' | 'signup'>('intro');
   const [selectedUser, setSelectedUser] = useState<LocalUser | null>(null);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [phaseIndex, setPhaseIndex] = useState(0);
-
-  useEffect(() => {
-    setMode('signin');
-  }, []);
+  const [showLoginCard, setShowLoginCard] = useState(false);
 
   const handleSelectUser = (u: LocalUser) => {
     setSelectedUser(u);
     setEmail(u.email);
     setMode('signin');
     setError('');
+  };
+
+  const handleEnterLogin = () => {
+    setShowLoginCard(true);
+    setTimeout(() => setMode('signin'), 100);
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -107,9 +109,27 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         </div>
       </div>
 
-      <div className="relative z-20 w-full max-w-md p-10 bg-[#060312]/90 backdrop-blur-xl border border-indigo-500/20 rounded-3xl shadow-[0_40px_80px_rgba(0,0,0,0.85),_0_0_80px_rgba(100,50,180,0.08),_inset_0_1px_0_rgba(255,255,255,0.06)]">
-        <h2 className="text-2xl font-light tracking-[6px] text-white text-center mb-1">A.R.I.A.</h2>
-        <p className="text-[10px] tracking-[3px] text-white/30 text-center uppercase mb-10">Workspace Edition</p>
+      {!showLoginCard && (
+        <div className="relative z-20 flex flex-col items-center gap-6">
+          <h1 className="text-5xl md:text-6xl font-extralight text-white tracking-[8px] mb-2 animate-fade-in-up">
+            A.R.I.A.
+          </h1>
+          <p className="text-xs tracking-[4px] text-white/30 uppercase animate-fade-in-up animation-delay-100">
+            Workspace Edition
+          </p>
+          <button
+            onClick={handleEnterLogin}
+            className="mt-8 px-12 py-4 bg-gradient-to-br from-indigo-600/80 to-purple-600/80 border border-indigo-400/40 rounded-xl text-white text-[11px] font-medium tracking-[3px] uppercase hover:shadow-[0_0_40px_rgba(150,80,230,0.4)] hover:-translate-y-[2px] transition-all duration-300 animate-fade-in-up animation-delay-200"
+          >
+            Iniciar Sesión
+          </button>
+        </div>
+      )}
+
+      {showLoginCard && (
+        <div className="relative z-20 w-full max-w-md p-10 bg-[#060312]/90 backdrop-blur-xl border border-indigo-500/20 rounded-3xl shadow-[0_40px_80px_rgba(0,0,0,0.85),_0_0_80px_rgba(100,50,180,0.08),_inset_0_1px_0_rgba(255,255,255,0.06)] animate-fade-in-up">
+          <h2 className="text-2xl font-light tracking-[6px] text-white text-center mb-1">A.R.I.A.</h2>
+          <p className="text-[10px] tracking-[3px] text-white/30 text-center uppercase mb-10">Workspace Edition</p>
 
         {error && (
           <div className="flex items-center gap-2 text-rose-400 bg-rose-500/10 p-3 rounded-xl mb-6 text-sm border border-rose-500/20">
@@ -214,7 +234,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             </div>
           </form>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
