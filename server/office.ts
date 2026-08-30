@@ -54,7 +54,8 @@ async function buildDocx(content: OfficeContent): Promise<Buffer> {
 }
 
 async function buildXlsx(content: OfficeContent): Promise<Buffer> {
-  const ExcelJS = await import("exceljs");
+  const ExcelJSModule = await import("exceljs");
+  const ExcelJS = ExcelJSModule.default || ExcelJSModule;
   const wb = new ExcelJS.Workbook();
   wb.creator = "A.R.I.A. Workspace";
 
@@ -64,11 +65,26 @@ async function buildXlsx(content: OfficeContent): Promise<Buffer> {
 
   for (const s of sheets) {
     const ws = wb.addWorksheet(s.name?.slice(0, 31) || "Hoja");
-    for (const row of s.rows || []) ws.addRow(row);
+    for (let row of s.rows || []) {
+      // Prevenir filas vacías si la IA genera un objeto plano en lugar de un arreglo de celdas
+      if (row && !Array.isArray(row) && typeof row === 'object') {
+         if ('formula' in row && Object.keys(row).length === 1) {
+           row = [row] as any;
+         } else {
+           row = Object.values(row) as any;
+         }
+      }
+      ws.addRow(row);
+    }
+    
     // header styling
     if (ws.rowCount > 0) {
       ws.getRow(1).font = { bold: true };
-      ws.columns.forEach((c: any) => (c.width = 24));
+      // Prevenir el crash TypeError: Cannot read properties of null (reading 'forEach')
+      const colCount = ws.getRow(1).actualCellCount || 10;
+      for (let i = 1; i <= colCount; i++) {
+        ws.getColumn(i).width = 24;
+      }
     }
   }
   return Buffer.from(await wb.xlsx.writeBuffer());

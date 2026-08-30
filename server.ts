@@ -130,6 +130,57 @@ app.delete("/api/admin/users/:id", (req, res) => {
   res.json({ success });
 });
 
+// ================= calendar =================
+
+app.get("/api/calendar", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  const calendarData = readCollection<Record<string, any[]>>("calendar", {});
+  const userEvents = calendarData[user.id] || [];
+  res.json({ events: userEvents });
+});
+
+app.post("/api/calendar", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  const { title, date, type, description } = req.body;
+  if (!title || !date) return res.status(400).json({ error: "Faltan datos requeridos" });
+  
+  const calendarData = readCollection<Record<string, any[]>>("calendar", {});
+  if (!calendarData[user.id]) {
+    calendarData[user.id] = [];
+  }
+  
+  const newEvent = {
+    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+    title,
+    date,
+    type: type || "meeting",
+    description: description || ""
+  };
+  
+  calendarData[user.id].push(newEvent);
+  writeCollection("calendar", calendarData);
+  res.json({ success: true, event: newEvent });
+});
+
+app.delete("/api/calendar/:id", (req, res) => {
+  const user = requireAuth(req, res);
+  if (!user) return;
+  const calendarData = readCollection<Record<string, any[]>>("calendar", {});
+  if (!calendarData[user.id]) return res.status(404).json({ error: "Evento no encontrado" });
+  
+  const initialLength = calendarData[user.id].length;
+  calendarData[user.id] = calendarData[user.id].filter((ev) => ev.id !== req.params.id);
+  
+  if (calendarData[user.id].length !== initialLength) {
+    writeCollection("calendar", calendarData);
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: "Evento no encontrado" });
+  }
+});
+
 // ================= models & chat =================
 
 app.get("/api/models", (req, res) => {
@@ -516,8 +567,10 @@ app.post("/api/documents/compile", async (req, res) => {
       return res.status(400).json({ error: "Tipo de documento no soportado" });
     }
 
+    const safeTitle = (masterJson.metadata.title || "documento").replace(/[^a-zA-Z0-9.\-_ áéíóúÁÉÍÓÚñÑ]/g, "").trim() || "documento";
+
     res.setHeader("Content-Type", "application/octet-stream");
-    res.setHeader("Content-Disposition", `attachment; filename="${masterJson.metadata.title || "documento"}${ext}"`);
+    res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}${ext}"`);
     res.send(buffer);
   } catch (error: any) {
     console.error("Compile Error:", error);

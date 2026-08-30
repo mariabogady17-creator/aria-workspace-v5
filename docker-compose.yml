@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  aria:
+    build: .
+    container_name: aria-workspace
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET:-aria-cloud-secret-2024}
+    volumes:
+      # Persistencia completa: todos los datos se guardan aquí
+      - aria-data:/app/data
+      - aria-documents:/app/user_documents
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  aria-data:
+    driver: local
+  aria-documents:
+    driver: local

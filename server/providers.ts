@@ -70,6 +70,13 @@ const DEFAULT_PROVIDERS: ProvidersConfig = {
       enabled: true
     },
     {
+      name: "DEEPSEEK (Paga)",
+      baseUrl: "https://api.deepseek.com",
+      apiKey: "sk-78a3c054eabe4e51ad200307878bc3c0",
+      models: ["deepseek-chat", "deepseek-reasoner"],
+      enabled: true
+    },
+    {
       name: "NVIDIA NIM",
       baseUrl: "https://integrate.api.nvidia.com/v1",
       apiKey: "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",

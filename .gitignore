@@ -37,4 +37,5 @@ raw_prompt.json
 opencode-skills-125/
 
 # Build artifacts
-package-lock.json
+# package-lock.json
+test_out.xlsx

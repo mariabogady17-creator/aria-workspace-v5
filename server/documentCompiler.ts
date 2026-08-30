@@ -5,22 +5,24 @@ export async function compileDocx(masterJson: MasterDocumentJSON): Promise<Buffe
   const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType } = docx;
 
   const children: any[] = [];
-  const primaryColor = masterJson.metadata.colors.primary.replace("#", "");
+  const colors = masterJson.metadata?.colors || { primary: "#4F46E5" };
+  const primaryColor = (colors.primary || "#4F46E5").replace("#", "");
 
   for (const item of masterJson.structure) {
+    const content = item.content || item;
     switch (item.type) {
       case 'cover_page':
-        if (item.content.title) {
+        if (content.title) {
           children.push(new Paragraph({
-            text: item.content.title,
+            text: content.title,
             heading: HeadingLevel.TITLE,
             spacing: { before: 2400, after: 400 },
             alignment: docx.AlignmentType.CENTER
           }));
         }
-        if (item.content.subtitle) {
+        if (content.subtitle) {
           children.push(new Paragraph({
-            text: item.content.subtitle,
+            text: content.subtitle,
             heading: HeadingLevel.HEADING_2,
             spacing: { after: 1200 },
             alignment: docx.AlignmentType.CENTER
@@ -30,7 +32,7 @@ export async function compileDocx(masterJson: MasterDocumentJSON): Promise<Buffe
 
       case 'heading_1':
         children.push(new Paragraph({
-          text: item.content,
+          text: content.text || content,
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 400, after: 200 }
         }));
@@ -38,7 +40,7 @@ export async function compileDocx(masterJson: MasterDocumentJSON): Promise<Buffe
 
       case 'heading_2':
         children.push(new Paragraph({
-          text: item.content,
+          text: content.text || content,
           heading: HeadingLevel.HEADING_2,
           spacing: { before: 300, after: 150 }
         }));
@@ -48,7 +50,7 @@ export async function compileDocx(masterJson: MasterDocumentJSON): Promise<Buffe
         children.push(new Paragraph({
           children: [
             new TextRun({
-              text: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
+              text: typeof content === 'string' ? content : (content.text || JSON.stringify(content)),
               color: item.styles?.bold ? primaryColor : '333333',
               bold: item.styles?.bold || false,
               italics: item.styles?.italic || false,
@@ -62,7 +64,7 @@ export async function compileDocx(masterJson: MasterDocumentJSON): Promise<Buffe
         children.push(new Paragraph({
           children: [
             new TextRun({
-              text: `💡 ${item.content.text}`,
+              text: `💡 ${content.text || content}`,
               italics: true,
               bold: true,
             }),
@@ -77,17 +79,17 @@ export async function compileDocx(masterJson: MasterDocumentJSON): Promise<Buffe
         break;
 
       case 'table':
-        if (item.content.headers && item.content.rows) {
+        if (content.headers && content.rows) {
           const rows = [
             new TableRow({
-              children: item.content.headers.map((header: string) => 
+              children: content.headers.map((header: string) => 
                 new TableCell({
                   children: [new Paragraph({ text: header, bold: true })],
                   shading: { fill: primaryColor },
                 })
               )
             }),
-            ...item.content.rows.map((row: string[]) => 
+            ...content.rows.map((row: string[]) => 
               new TableRow({
                 children: row.map((cell: string) => 
                   new TableCell({
@@ -103,8 +105,9 @@ export async function compileDocx(masterJson: MasterDocumentJSON): Promise<Buffe
         break;
 
       case 'bullet_list':
-        if (Array.isArray(item.content)) {
-          for (const bullet of item.content) {
+        const bullets = Array.isArray(content) ? content : (content.bullets || content.items || []);
+        if (Array.isArray(bullets)) {
+          for (const bullet of bullets) {
             children.push(new Paragraph({
               text: String(bullet),
               bullet: { level: 0 },
@@ -126,14 +129,16 @@ export async function compileDocx(masterJson: MasterDocumentJSON): Promise<Buffe
 }
 
 export async function compileXlsx(masterJson: MasterDocumentJSON): Promise<Buffer> {
-  const ExcelJS = (await import("exceljs")).default;
+  const ExcelJSModule = await import("exceljs");
+  const ExcelJS = ExcelJSModule.default || ExcelJSModule;
   const wb = new ExcelJS.Workbook();
   wb.creator = "A.R.I.A. Workspace";
   
   // ARGB Colors (FF + Hex)
-  const primaryColor = masterJson.metadata.colors.primary.replace("#", "FF"); 
-  const secondaryColor = masterJson.metadata.colors.secondary.replace("#", "FF");
-  const accentColor = masterJson.metadata.colors.accent.replace("#", "FF");
+  const colors = masterJson.metadata?.colors || { primary: "#4F46E5", secondary: "#818CF8", accent: "#F59E0B" };
+  const primaryColor = (colors.primary || "#4F46E5").replace("#", "FF"); 
+  const secondaryColor = (colors.secondary || "#818CF8").replace("#", "FF");
+  const accentColor = (colors.accent || "#F59E0B").replace("#", "FF");
 
   // Premium thin border style
   const thinBorder = {
@@ -311,23 +316,28 @@ export async function compileXlsx(masterJson: MasterDocumentJSON): Promise<Buffe
 }
 
 export async function compilePptx(masterJson: MasterDocumentJSON): Promise<Buffer> {
-  const pptxgen = (await import("pptxgenjs")).default;
+  const pptxgenModule = await import("pptxgenjs");
+  const pptxgen = pptxgenModule.default || pptxgenModule;
   const pptx = new pptxgen();
   pptx.author = "A.R.I.A. Workspace";
   
-  const primaryColor = masterJson.metadata.colors.primary.replace("#", "");
+  const colors = masterJson.metadata?.colors || { primary: "#4F46E5", background: "#1A1A2E" };
+  const primaryColor = (colors.primary || "#4F46E5").replace("#", "");
+  const bgColor = (colors.background || "#1A1A2E").replace("#", "");
 
   // Render slides based on structure
   for (const item of masterJson.structure) {
+    const content = item.content || item;
+    
     if (item.type === 'cover_page') {
       const cover = pptx.addSlide();
-      cover.background = { color: masterJson.metadata.colors.background.replace("#", "") };
-      cover.addText(item.content.title || "", {
+      cover.background = { color: bgColor };
+      cover.addText(content.title || "", {
         x: 0.5, y: 1.5, w: 9, h: 1.5,
         fontSize: 44, bold: true, color: primaryColor, align: "center",
       });
-      if (item.content.subtitle) {
-        cover.addText(item.content.subtitle, {
+      if (content.subtitle) {
+        cover.addText(content.subtitle, {
           x: 0.5, y: 3.5, w: 9, h: 1,
           fontSize: 24, color: "555555", align: "center",
         });
@@ -335,22 +345,25 @@ export async function compilePptx(masterJson: MasterDocumentJSON): Promise<Buffe
     }
     else if (item.type === 'slide') {
       const slide = pptx.addSlide();
-      slide.background = { color: masterJson.metadata.colors.background.replace("#", "") };
+      slide.background = { color: bgColor };
       
-      slide.addText(item.content.title || "", {
+      slide.addText(content.title || "", {
         x: 0.5, y: 0.3, w: 9, h: 0.8,
         fontSize: 32, bold: true, color: primaryColor,
       });
 
-      if (item.content.components) {
+      const components = content.components || [];
+      if (components.length > 0) {
         let currentY = 1.5;
-        for (const comp of item.content.components) {
+        for (const comp of components) {
+          const compContent = comp.content || comp;
           if (comp.type === 'paragraph') {
-            slide.addText(comp.content, { x: 0.5, y: currentY, w: 9, h: 1, fontSize: 18, color: "333333" });
+            slide.addText(typeof compContent === 'string' ? compContent : compContent.text || "", { x: 0.5, y: currentY, w: 9, h: 1, fontSize: 18, color: "333333" });
             currentY += 1.2;
           } else if (comp.type === 'bullet_list') {
+             const bullets = Array.isArray(compContent) ? compContent : (compContent.bullets || compContent.items || []);
              slide.addText(
-               comp.content.map((b: string) => ({ text: b, options: { bullet: true, breakLine: true } })),
+               bullets.map((b: string) => ({ text: b, options: { bullet: true, breakLine: true } })),
                { x: 0.5, y: currentY, w: 9, h: 3, fontSize: 18, color: "333333", valign: "top" }
              );
              currentY += 3;
