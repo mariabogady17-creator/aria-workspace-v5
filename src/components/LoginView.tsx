@@ -113,9 +113,16 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           <div className={`transition-all duration-700 ${showButton ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
             <button
               onClick={handleEnterLogin}
-              className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 border border-indigo-400/50 rounded-xl text-white text-[11px] font-medium tracking-[3px] uppercase hover:shadow-[0_0_30px_rgba(150,80,230,0.4)] hover:-translate-y-[1px] transition-all duration-300"
+              className="group relative px-8 py-3 rounded-full text-white text-[11px] font-medium tracking-[3px] uppercase transition-all duration-500 hover:scale-105"
+              style={{
+                background: 'radial-gradient(ellipse at center, rgba(168,85,247,0.5) 0%, rgba(139,92,246,0.3) 40%, rgba(88,28,135,0.15) 70%, transparent 100%)',
+                boxShadow: '0 0 40px rgba(168,85,247,0.3), 0 0 80px rgba(139,92,246,0.15), inset 0 0 20px rgba(168,85,247,0.1)',
+                border: '1px solid rgba(168,85,247,0.25)',
+                animation: 'pulse-glow 3s ease-in-out infinite'
+              }}
             >
-              Entrar
+              <span className="relative z-10">Entrar</span>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </button>
           </div>
         </div>
