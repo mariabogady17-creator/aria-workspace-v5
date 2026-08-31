@@ -1,23 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { ShaderBackground } from "./components/ShaderBackground";
 import { Sidebar } from "./components/Sidebar";
 import { TopAppBar } from "./components/TopAppBar";
-import { ChatView } from "./components/ChatView";
-import { DocumentVaultView } from "./components/DocumentVaultView";
-import { MeetingModeView } from "./components/MeetingModeView";
-import { AdminView } from "./components/AdminView";
-import { SettingsModal } from "./components/SettingsModal";
-import { LoginView } from "./components/LoginView";
-import { ConversationsView } from "./components/ConversationsView";
-import { NotesView } from "./components/NotesView";
-import { CalendarView } from "./components/CalendarView";
-import { AgentsView } from "./components/AgentsView";
-import { WarRoomView } from "./components/WarRoomView";
-import { DashboardView } from "./components/DashboardView";
-import { DocumentEditor } from "./components/DocumentEditor";
+const ChatView = React.lazy(() => import("./components/ChatView").then(m => ({ default: m.ChatView })));
+const DocumentVaultView = React.lazy(() => import("./components/DocumentVaultView").then(m => ({ default: m.DocumentVaultView })));
+const MeetingModeView = React.lazy(() => import("./components/MeetingModeView").then(m => ({ default: m.MeetingModeView })));
+const AdminView = React.lazy(() => import("./components/AdminView").then(m => ({ default: m.AdminView })));
+const SettingsModal = React.lazy(() => import("./components/SettingsModal").then(m => ({ default: m.SettingsModal })));
+const LoginView = React.lazy(() => import("./components/LoginView").then(m => ({ default: m.LoginView })));
+const ConversationsView = React.lazy(() => import("./components/ConversationsView").then(m => ({ default: m.ConversationsView })));
+const NotesView = React.lazy(() => import("./components/NotesView").then(m => ({ default: m.NotesView })));
+const CalendarView = React.lazy(() => import("./components/CalendarView").then(m => ({ default: m.CalendarView })));
+const AgentsView = React.lazy(() => import("./components/AgentsView").then(m => ({ default: m.AgentsView })));
+const WarRoomView = React.lazy(() => import("./components/WarRoomView").then(m => ({ default: m.WarRoomView })));
+const DashboardView = React.lazy(() => import("./components/DashboardView").then(m => ({ default: m.DashboardView })));
+const DocumentEditor = React.lazy(() => import("./components/DocumentEditor").then(m => ({ default: m.DocumentEditor })));
 import { NavTab, AppMode, ChatMessage, DocumentItem, UserProfile } from "./types";
 import { HelpCircle, Sparkles, Code, Terminal, MessageSquare, Bot } from "lucide-react";
-import MiniSearch from 'minisearch';
 import { fetchWithRetry } from "./utils/fetchWithRetry";
 import { connectionMonitor } from "./utils/connectionMonitor";
 
@@ -288,6 +287,7 @@ El compilador inserta las tablas con esta posición estricta:
       // --- RAG (Retreival-Augmented Generation) Logic ---
       let autoContext = "";
       if (documents.length > 0 && !docContext && !attachedDocContent) {
+        const { default: MiniSearch } = await import('minisearch');
         const miniSearch = new MiniSearch({
           fields: ['name', 'content', 'category'], // fields to index for full-text search
           storeFields: ['name', 'content'], // fields to return with search results
@@ -509,7 +509,7 @@ El compilador inserta las tablas con esta posición estricta:
   }
 
   if (!user) {
-    return <LoginView onLoginSuccess={handleLoginSuccess} />;
+    return <Suspense fallback={null}><LoginView onLoginSuccess={handleLoginSuccess} /></Suspense>;
   }
 
   return (
@@ -563,6 +563,7 @@ El compilador inserta las tablas con esta posición estricta:
 
       {/* Main View Router */}
       <main className="relative z-10 flex h-screen w-full">
+        <Suspense fallback={null}>
         {appMode === "meeting" ? (
           <MeetingModeView />
         ) : (
@@ -658,6 +659,7 @@ El compilador inserta las tablas con esta posición estricta:
             )}
           </div>
         )}
+        </Suspense>
       </main>
     </div>
   );
