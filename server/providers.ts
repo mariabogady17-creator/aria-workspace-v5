@@ -144,13 +144,13 @@ export function allGeminiKeys(): string[] {
 // ---------- model catalog ----------
 
 const GEMINI_MODEL_MAP: Record<string, string> = {
-  "3.6 Flash": "gemini-1.5-flash", 
-  "3.1 Pro": "gemini-1.5-pro",
-  "Flash 2.5": "gemini-1.5-flash-8b",
-  "Gemini 2.0 Pro": "gemini-2.0-pro-exp-0205",
+  "3.6 Flash": "gemini-2.5-flash",
+  "3.1 Pro": "gemini-2.5-pro",
+  "Flash 2.5": "gemini-2.5-flash",
+  "Gemini 2.5 Pro": "gemini-2.5-pro",
+  "Gemini 2.5 Flash": "gemini-2.5-flash",
   "Gemini 2.0 Flash": "gemini-2.0-flash",
-  "Gemini 1.5 Pro": "gemini-1.5-pro",
-  "Gemini 1.5 Flash": "gemini-1.5-flash"
+  "Gemini 2.0 Pro": "gemini-2.0-pro-exp-0205"
 };
 
 const offlineModels = new Set<string>();
@@ -442,7 +442,7 @@ export async function chatWithFallback(opts: {
         chain.push({ kind: "openai", slot: s, label: s.name, model: s.models[0] });
     }
   } else {
-    const gModel = geminiModel || "gemini-3.6-flash";
+    const gModel = geminiModel || "gemini-2.5-flash";
     allGeminiKeys().forEach((key, i) =>
       chain.push({ kind: "gemini", key, label: `gemini-key-${i + 1}`, model: gModel })
     );

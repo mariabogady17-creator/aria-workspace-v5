@@ -759,7 +759,7 @@ async function runAgentLoop() {
     
     try {
       const result = await chatWithFallback({
-        requestedModel: "gemini-3.6-flash",
+        requestedModel: "gemini-2.5-flash",
         messages: [{ role: "user", content: `TAREA AUTÓNOMA: ${task.goal}\n\nInstrucción: Escribe un informe detallado sobre esto. Sé exhaustivo.` }],
         systemInstruction: "Eres un agente autónomo de investigación. Realiza el informe pedido de manera completa.",
         toolDeclarations: [SEARCH_WEB_TOOL_DECLARATION]
