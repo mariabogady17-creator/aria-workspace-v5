@@ -11,6 +11,16 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            three: ['three'],
+            'react-force-graph': ['react-force-graph-2d'],
+          },
+        },
+      },
+    },
     server: {
       allowedHosts: true,
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

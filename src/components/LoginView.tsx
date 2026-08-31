@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { LoginScene } from './LoginScene';
+import React, { useState, useEffect, Suspense } from 'react';
+const LoginScene = React.lazy(() => import('./LoginScene').then(m => ({ default: m.LoginScene })));
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface LocalUser {
@@ -90,7 +90,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black flex items-center justify-center font-sans">
-      <LoginScene className="absolute inset-0 z-0 pointer-events-none" onPhaseChange={setPhaseIndex} />
+      <Suspense fallback={null}>
+        <LoginScene className="absolute inset-0 z-0 pointer-events-none" onPhaseChange={setPhaseIndex} />
+      </Suspense>
 
       <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/50 to-transparent">
       </div>

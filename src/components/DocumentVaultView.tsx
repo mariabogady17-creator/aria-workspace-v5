@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import {
   Search,
   UploadCloud,
@@ -18,7 +18,7 @@ import {
   Trash2
 } from "lucide-react";
 import { DocumentItem } from "../types";
-import { GraphView } from "./GraphView";
+const GraphView = React.lazy(() => import("./GraphView").then(m => ({ default: m.GraphView })));
 
 interface DocumentVaultViewProps {
   documents: DocumentItem[];
@@ -394,10 +394,12 @@ export const DocumentVaultView: React.FC<DocumentVaultViewProps> = ({
       )}
 
       {showGraph && (
-        <GraphView 
-          documents={documents} 
-          onClose={() => setShowGraph(false)} 
-        />
+        <Suspense fallback={null}>
+          <GraphView 
+            documents={documents} 
+            onClose={() => setShowGraph(false)} 
+          />
+        </Suspense>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { Mic, X, Loader2 } from "lucide-react";
-import { ThreeNeuralCore } from "./ThreeNeuralCore";
+const ThreeNeuralCore = React.lazy(() => import("./ThreeNeuralCore").then(m => ({ default: m.ThreeNeuralCore })));
 
 interface HandsFreeModeProps {
   onClose: () => void;
@@ -125,7 +125,9 @@ export const HandsFreeMode: React.FC<HandsFreeModeProps> = ({ onClose, onSendMes
       
       {/* Background Neural Core */}
       <div className="absolute inset-0 z-0 opacity-40 scale-150 flex items-center justify-center pointer-events-none">
-        <ThreeNeuralCore isThinking={isThinking} isSpeaking={isSpeaking} />
+        <Suspense fallback={null}>
+          <ThreeNeuralCore isThinking={isThinking} isSpeaking={isSpeaking} />
+        </Suspense>
       </div>
 
       <button onClick={onClose} className="absolute top-8 right-8 z-50 p-4 text-white/30 hover:text-white transition-colors rounded-full hover:bg-white/10">

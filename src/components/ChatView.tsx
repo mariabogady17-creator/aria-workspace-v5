@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import {
   Send,
   Paperclip,
@@ -28,7 +28,7 @@ import {
   Table
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { ThreeNeuralCore } from "./ThreeNeuralCore";
+const ThreeNeuralCore = React.lazy(() => import("./ThreeNeuralCore").then(m => ({ default: m.ThreeNeuralCore })));
 import { HandsFreeMode } from "./HandsFreeMode";
 import { DocumentCard } from "./DocumentCard";
 import { CodeBlockViewer } from "./CodeBlockViewer";
@@ -378,7 +378,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
           /* Landing View with 3D Core & Initial Stage */
           <div className="min-h-[75vh] flex flex-col items-center justify-center relative w-full max-w-4xl mx-auto text-center">
             {/* 3D AI Neural Core */}
-            <ThreeNeuralCore isGenerating={isGenerating} />
+            <Suspense fallback={null}>
+              <ThreeNeuralCore isGenerating={isGenerating} />
+            </Suspense>
 
             {/* Title */}
             <h2 className="font-bold text-2xl md:text-3xl bg-clip-text text-transparent bg-gradient-to-r from-[#e5e2e1] via-[var(--primary)] to-[#e5e2e1] mb-8 tracking-tight">
