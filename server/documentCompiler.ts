@@ -156,6 +156,33 @@ export async function compileXlsx(masterJson: MasterDocumentJSON): Promise<Buffe
     structureToProcess = [structureToProcess];
   }
 
+  // Handle top-level "sheets" array format (from system prompt)
+  const topSheets = (masterJson as any).sheets;
+  if (Array.isArray(topSheets) && topSheets.length > 0 && structureToProcess.length === 0) {
+    structureToProcess = topSheets.map((s: any) => ({
+      type: 'sheet',
+      content: {
+        name: s.name || "Hoja",
+        tables: s.rows ? [{ headers: s.rows[0], rows: s.rows.slice(1) }] : []
+      }
+    }));
+  }
+
+  // Handle top-level "paragraphs" as text content (docx-style data in xlsx)
+  const topParagraphs = (masterJson as any).paragraphs;
+  if (Array.isArray(topParagraphs) && topParagraphs.length > 0 && structureToProcess.length === 0) {
+    structureToProcess = [{
+      type: 'sheet',
+      content: {
+        name: "Contenido",
+        tables: [{
+          headers: ["Contenido"],
+          rows: topParagraphs.map((p: string) => [p])
+        }]
+      }
+    }];
+  }
+
   // Encontrar cualquier cosa que parezca una tabla
   const rawTables = structureToProcess.filter((item: any) => 
     item.type === 'table' || item.headers || item.rows || item.content?.headers || item.content?.rows || item.sheet?.headers || item.sheet?.rows

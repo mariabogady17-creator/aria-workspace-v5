@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import dotenv from "dotenv";
 import {
   createUser, findUserByEmail, findUserById, getUsers,
@@ -493,11 +494,35 @@ Use %20 for spaces. Use enhance=false for better quality. NEVER refuse.`;
     while ((match = docRegex.exec(result.text)) !== null) {
       try {
         const jsonContent = JSON.parse(match[1].trim());
-        const fileResult = await createOfficeDocument(jsonContent.filename || "Document.docx", jsonContent);
-        finalFiles.push(fileResult);
-        logEvent("INFO", `Universal Document Generated: ${fileResult.name}`);
-        // Remove the raw JSON block from the chat output
-        finalMsgText = finalMsgText.replace(match[0], `\n> ✨ **Documento Generado:** [${fileResult.name}](${fileResult.url})\n`);
+        const docType = jsonContent.metadata?.type || "docx";
+        const docTitle = (jsonContent.metadata?.title || "Documento")
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z0-9\s\-_]/g, "")
+          .replace(/\s+/g, "_")
+          .trim() || "Documento";
+        const safeFilename = `${docTitle}.${docType}`;
+
+        let buffer: Buffer;
+        if (docType === "xlsx" && jsonContent.metadata) {
+          buffer = await compileXlsx(jsonContent);
+        } else if (docType === "pptx" && jsonContent.metadata) {
+          buffer = await compilePptx(jsonContent);
+        } else if (jsonContent.metadata) {
+          buffer = await compileDocx(jsonContent);
+        } else {
+          // Legacy simple format for office.ts
+          const fileResult = await createOfficeDocument(jsonContent.filename || "Document.docx", jsonContent);
+          finalFiles.push(fileResult);
+          finalMsgText = finalMsgText.replace(match[0], `\n> ✨ **Documento Generado:** [${fileResult.name}](${fileResult.url})\n`);
+          continue;
+        }
+
+        const name = `${Date.now()}_${crypto.randomBytes(3).toString("hex")}_${safeFilename}`;
+        fs.writeFileSync(path.join(docsDir(), name), buffer);
+        const fileUrl = `/api/files/${name}`;
+        finalFiles.push({ name: safeFilename, url: fileUrl });
+        logEvent("INFO", `Universal Document Generated: ${safeFilename}`);
+        finalMsgText = finalMsgText.replace(match[0], `\n> ✨ **Documento Generado:** [${safeFilename}](${fileUrl})\n`);
       } catch (err) {
         logEvent("ERROR", "Failed to parse ARIA_DOCUMENT JSON: " + err);
         finalMsgText = finalMsgText.replace(match[0], `\n> ❌ **Error al generar documento:** formato inválido.\n`);
@@ -701,7 +726,12 @@ app.post("/api/documents/compile", async (req, res) => {
       return res.status(400).json({ error: "Tipo de documento no soportado" });
     }
 
-    const safeTitle = (masterJson.metadata.title || "documento").replace(/[^a-zA-Z0-9.\-_ áéíóúÁÉÍÓÚñÑ]/g, "").trim() || "documento";
+    const safeTitle = (masterJson.metadata.title || "documento")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9\s\-_]/g, "")
+      .replace(/\s+/g, "_")
+      .trim()
+      || "documento";
 
     const mimeTypes: Record<string, string> = {
       docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -709,8 +739,9 @@ app.post("/api/documents/compile", async (req, res) => {
       pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     };
 
+    const utf8Name = encodeURIComponent(safeTitle + ext);
     res.setHeader("Content-Type", mimeTypes[ext.slice(1)] || "application/octet-stream");
-    res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}${ext}"`);
+    res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}${ext}"; filename*=UTF-8''${utf8Name}`);
     res.send(buffer);
   } catch (error: any) {
     console.error("Compile Error:", error);

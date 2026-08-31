@@ -59,14 +59,47 @@ async function buildXlsx(content: OfficeContent): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
   wb.creator = "A.R.I.A. Workspace";
 
-  const sheets = content.sheets?.length
-    ? content.sheets
-    : [{ name: "Hoja1", rows: (content.paragraphs || []).map((p) => [p]) }];
+  // Handle MasterDocumentJSON format (metadata.type + structure/sheets)
+  let sheets = content.sheets;
+  if (!sheets && (content as any).metadata) {
+    const master = content as any;
+    // Try top-level sheets array
+    if (Array.isArray(master.sheets)) {
+      sheets = master.sheets;
+    }
+    // Try structure array with sheet types
+    else if (Array.isArray(master.structure)) {
+      const sheetItems = master.structure.filter((i: any) => i.type === 'sheet' || i.content?.tables || i.headers || i.rows);
+      if (sheetItems.length > 0) {
+        sheets = sheetItems.map((item: any) => {
+          const c = item.content || item;
+          if (c.tables && c.tables.length > 0) {
+            return {
+              name: c.name || "Hoja",
+              rows: [
+                c.tables[0].headers || [],
+                ...(c.tables[0].rows || [])
+              ]
+            };
+          }
+          if (c.headers || c.rows) {
+            return { name: c.name || "Hoja", rows: [c.headers || [], ...(c.rows || [])] };
+          }
+          return { name: "Hoja", rows: [] };
+        });
+      }
+    }
+    // Try top-level paragraphs as single-column data
+    if (!sheets && Array.isArray(master.paragraphs)) {
+      sheets = [{ name: "Contenido", rows: master.paragraphs.map((p: string) => [p]) }];
+    }
+  }
+
+  sheets = sheets?.length ? sheets : [{ name: "Hoja1", rows: (content.paragraphs || []).map((p) => [p]) }];
 
   for (const s of sheets) {
     const ws = wb.addWorksheet(s.name?.slice(0, 31) || "Hoja");
     for (let row of s.rows || []) {
-      // Prevenir filas vacías si la IA genera un objeto plano en lugar de un arreglo de celdas
       if (row && !Array.isArray(row) && typeof row === 'object') {
          if ('formula' in row && Object.keys(row).length === 1) {
            row = [row] as any;
@@ -77,13 +110,36 @@ async function buildXlsx(content: OfficeContent): Promise<Buffer> {
       ws.addRow(row);
     }
     
-    // header styling
+    // Premium header styling
     if (ws.rowCount > 0) {
-      ws.getRow(1).font = { bold: true };
-      // Prevenir el crash TypeError: Cannot read properties of null (reading 'forEach')
-      const colCount = ws.getRow(1).actualCellCount || 10;
+      const headerRow = ws.getRow(1);
+      headerRow.eachCell(cell => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12, name: 'Segoe UI' };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+          left: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+          bottom: { style: 'medium', color: { argb: 'FFF59E0B' } },
+          right: { style: 'thin', color: { argb: 'FFDDDDDD' } }
+        };
+      });
+      const colCount = headerRow.actualCellCount || 10;
       for (let i = 1; i <= colCount; i++) {
         ws.getColumn(i).width = 24;
+      }
+      // Zebra striping for data rows
+      for (let r = 2; r <= ws.rowCount; r++) {
+        ws.getRow(r).eachCell(cell => {
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+            left: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+            bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+            right: { style: 'thin', color: { argb: 'FFDDDDDD' } }
+          };
+          if (r % 2 === 0) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } };
+          }
+        });
       }
     }
   }

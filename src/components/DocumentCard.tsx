@@ -52,7 +52,12 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ type, title, content
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${parsed.metadata.title || "documento"}.${parsed.metadata.type}`;
+        const cleanName = (parsed.metadata.title || "documento")
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z0-9\s\-_]/g, "")
+          .replace(/\s+/g, "_")
+          .trim() || "documento";
+        a.download = `${cleanName}.${parsed.metadata.type}`;
         document.body.appendChild(a);
         a.click();
         

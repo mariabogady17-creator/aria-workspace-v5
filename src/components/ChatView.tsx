@@ -191,8 +191,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
     const parts = [];
     let lastIndex = 0;
     
-    // Regex para JSON Master Document y Legacy ARIA_DOCUMENT
-    const docRegex = /(?:```json\s*(\{[\s\S]*?"metadata"[\s\S]*?\})\s*```)|(?:\[ARIA_DOCUMENT\s+type="([^"]+)"\s+title="([^"]+)"\]([\s\S]*?)\[\/ARIA_DOCUMENT\])/g;
+    // Regex para JSON Master Document (```json blocks), ARIA_DOCUMENT tags, y legacy format
+    const docRegex = /(?:```json\s*(\{[\s\S]*?"metadata"[\s\S]*?\})\s*```)|(?:\[ARIA_DOCUMENT\]([\s\S]*?)\[\/ARIA_DOCUMENT\])|(?:\[ARIA_DOCUMENT\s+type="([^"]+)"\s+title="([^"]+)"\]([\s\S]*?)\[\/ARIA_DOCUMENT\])/g;
     let match;
 
     while ((match = docRegex.exec(content)) !== null) {
@@ -205,7 +205,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       let docContent = "";
 
       if (match[1]) {
-        // Es un JSON Master Document
+        // Es un JSON Master Document (```json block)
         docContent = match[1];
         try {
           const parsed = JSON.parse(docContent);
@@ -215,11 +215,22 @@ export const ChatView: React.FC<ChatViewProps> = ({
           type = "docx";
           title = "Documento";
         }
+      } else if (match[2]) {
+        // Es [ARIA_DOCUMENT]...[/ARIA_DOCUMENT] (new format)
+        docContent = match[2];
+        try {
+          const parsed = JSON.parse(docContent);
+          type = parsed.metadata?.type || "docx";
+          title = parsed.metadata?.title || "Documento_ARIA";
+        } catch (e) {
+          type = "docx";
+          title = "Documento";
+        }
       } else {
-        // Es Legacy ARIA_DOCUMENT
-        type = match[2];
-        title = match[3];
-        docContent = match[4];
+        // Es Legacy ARIA_DOCUMENT with attributes
+        type = match[3];
+        title = match[4];
+        docContent = match[5];
       }
 
       parts.push(
