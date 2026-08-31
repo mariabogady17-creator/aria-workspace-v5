@@ -24,13 +24,14 @@ app.use(express.json({ limit: "25mb" }));
 
 // ================= security headers =================
 app.use((_req, res, next) => {
-  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://image.pollinations.ai; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://image.pollinations.ai; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; require-trusted-types-for 'script'");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   next();
 });
 
@@ -897,6 +898,15 @@ import { ensureDefaultAdmin } from "./server/auth";
 
 // Interceptar peticiones a modelos locales para evitar que Vite devuelva index.html (SPA fallback)
 // Si el archivo no existe, forzamos un 404 para que Transformers.js haga fallback remoto.
+
+// Serve robots.txt and llms.txt explicitly so SPA fallback never intercepts them
+app.get("/robots.txt", (_req, res) => {
+  res.type("text/plain").sendFile(path.join(process.cwd(), "dist", "robots.txt"));
+});
+app.get("/llms.txt", (_req, res) => {
+  res.type("text/plain").sendFile(path.join(process.cwd(), "dist", "llms.txt"));
+});
+
 app.use("/models", express.static(path.join(process.cwd(), "public/models")));
 app.get("/models/*", (_req, res) => {
   res.status(404).json({ error: "Model file not found locally" });

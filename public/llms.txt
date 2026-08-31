@@ -17,5 +17,5 @@ A.R.I.A Workspace es una plataforma web que integra múltiples modelos de IA (Ge
 
 ## Enlaces
 
-- [Documentación](https://aria-workspace-v5-production.up.railway.app)
-- [API Health](https://aria-workspace-v5-production.up.railway.app/api/health)
+- https://aria-workspace-v5-production.up.railway.app
+- https://aria-workspace-v5-production.up.railway.app/api/health
